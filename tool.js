@@ -157,7 +157,7 @@ module.exports = function(options) {
             ];
 
             // If we have require in the match, cover common.js short form edge case
-            if (result[0].indexOf('require') != -1) {
+            if (result[0].indexOf('requires') != -1) {
                 referencePaths.push({  
                     base: file.base,
                     path: joinPath(path.dirname(file.path), reference + '.js'),
