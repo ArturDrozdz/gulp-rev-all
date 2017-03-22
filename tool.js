@@ -72,13 +72,13 @@ module.exports = function(options) {
         // Add back the relative reference so we don't break commonjs style includes
         if (reference.indexOf('./') === 0) {
             newPath = './' + newPath;
-        }         
+        }
 
         if (options.transformPath) {
             newPath = options.transformPath.call(self, newPath, reference, file, isRelative);
         } else if (!isRelative && options.prefix) {
             newPath = joinPathUrl(options.prefix, newPath);
-        } 
+        }
 
         var msg = isRelative ? 'relative' : 'root';
         gutil.log('gulp-rev-all:', 'Found', msg, 'reference [', gutil.colors.magenta(reference), '] -> [', gutil.colors.green(newPath), ']');
@@ -129,7 +129,7 @@ module.exports = function(options) {
         } else {
             gutil.log('gulp-rev-all:', 'Finding references in [', gutil.colors.magenta(getRelativeFilename(file.base, file.path)), ']');
         }
-        
+
         // Create a map of file references and their proper revisioned name
         var contents = String(file.contents);
         var hash = md5(contents);
@@ -158,7 +158,7 @@ module.exports = function(options) {
 
             // If we have require in the match, cover common.js short form edge case
             if (result[0].indexOf('requires') != -1) {
-                referencePaths.push({  
+                referencePaths.push({
                     base: file.base,
                     path: joinPath(path.dirname(file.path), reference + '.js'),
                     isRelative: true
@@ -175,7 +175,7 @@ module.exports = function(options) {
                 if (cache[file.path].rewriteMap[reference]) break;
 
                 // Continue if this file doesn't exist
-                if (!fs.existsSync(referencePath.path)) continue;          
+                if (!fs.existsSync(referencePath.path)) continue;
 
                 // Don't resolve reference of ignored files
                 if (isFileIgnored(referencePath)) continue;
@@ -216,9 +216,13 @@ module.exports = function(options) {
         for (var reference in cache[file.path].rewriteMap) {
             var fileReference = cache[file.path].rewriteMap[reference].reference.fileOriginal;
             var isRelative = cache[file.path].rewriteMap[reference].relative;
-            
+
             var contents = String(file.contents);
-            contents = contents.replace(RegExp(reference, 'g'), getReplacement(reference, fileReference, isRelative));
+
+            // escaping . character as in regexp . matches any character
+            var referenceRegExp = reference.replace(RegExp('[.]', 'g'), '\\.');
+
+            contents = contents.replace(RegExp(referenceRegExp, 'g'), getReplacement(reference, fileReference, isRelative));
             file.contents = new Buffer(contents);
         }
 
@@ -230,7 +234,7 @@ module.exports = function(options) {
         } else {
             gutil.log('gulp-rev-all:', 'Not renaming [', gutil.colors.red(getRelativeFilename(file.base, file.path)), '] due to filter rules.');
         }
-        
+
         return file;
 
     };
